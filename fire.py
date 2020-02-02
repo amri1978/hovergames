@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
 ################################################################################
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
 
         # load video file from first command line argument
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
         height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = video.get(cv2.CAP_PROP_FPS)
         frame_time = round(1000/fps);
-        out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('M','J','P','G'),10, (width,height))
+        if (len(sys.argv) == 3 and sys.argv[2] == 's') : out = cv2.VideoWriter("out_" + sys.argv[1],cv2.VideoWriter_fourcc('M','J','P','G'),10, (width,height))
 
         while (keepProcessing):
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
             # image display and key handling
 
             cv2.imshow(windowName, frame);
-            out.write(frame);
+            if (len(sys.argv) == 3 and sys.argv[2] == 's') : out.write(frame);
 
             # wait fps time or less depending on processing time taken (e.g. 1000ms / 25 fps = 40 ms)
 
@@ -141,6 +141,6 @@ if __name__ == '__main__':
                 cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
     else:
         print("usage: python fire.py videofile");
-    out.release()
+    if (len(sys.argv) == 3 and sys.argv[2] == 's') : out.release()
 
 ################################################################################
