@@ -64,12 +64,6 @@ udp_conn.master.mav.srcComponent = 1  # needed to make QGroundControl work!
 udp_conn.start()
 udp_conn.fix_targets = my_new_fix_targets
 
-
-
-
-
-
-
 ################################################################################
 
 if __name__ == '__main__':
@@ -112,10 +106,6 @@ if __name__ == '__main__':
     video = cv2.VideoCapture(0)
     print("Loaded video ...")
 
-    # create window
-
-    cv2.namedWindow(windowName, cv2.WINDOW_NORMAL);
-
     # get video properties
 
     width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH));
@@ -125,46 +115,19 @@ if __name__ == '__main__':
 
     while (keepProcessing):
 
-        # start a timer (to see how long processing and display takes)
-
-        start_t = cv2.getTickCount();
 
         # get video frame from camera
 
         ret, frame = video.read()
-
 
         # re-size image to network input size and perform prediction
 
         small_frame = cv2.resize(frame, (rows, cols), cv2.INTER_AREA)
         output = model.predict([small_frame])
 
-        # label image based on prediction
+        # Send an alert message when fire is detected
 
         if round(output[0][0]) == 1:
-            cv2.rectangle(frame, (0,0), (width,height), (0,0,255), 50)
-            cv2.putText(frame,'FIRE',(int(width/16),int(height/4)),
-                cv2.FONT_HERSHEY_SIMPLEX, 2,(255,255,255),7,cv2.LINE_AA);
             msg = vehicle.message_factory.statustext_encode(1,b'Alert Fire at : ' + str( vehicle.location.global_frame).encode())
             udp_conn.master.mav.send(msg)
-        else:
-            cv2.rectangle(frame, (0,0), (width,height), (0,255,0), 50)
-            cv2.putText(frame,'CLEAR',(int(width/16),int(height/4)),
-                cv2.FONT_HERSHEY_SIMPLEX, 2,(255,255,255),7,cv2.LINE_AA);
-            
 
-        # stop the timer and convert to ms. (to see how long processing and display takes)
-
-        stop_t = ((cv2.getTickCount() - start_t)/cv2.getTickFrequency()) * 1000;
-
-        # image display and key handling
-
-        cv2.imshow(windowName, frame);
-
-        # wait fps time or less depending on processing time taken (e.g. 1000ms / 25 fps = 40 ms)
-
-        key = cv2.waitKey(max(2, frame_time - int(math.ceil(stop_t)))) & 0xFF;
-        if (key == ord('x')):
-            keepProcessing = False;
-        elif (key == ord('f')):
-            cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
